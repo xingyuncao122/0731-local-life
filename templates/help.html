@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}帮助中心{% endblock %}
+
+{% block page_css %}
+.help-page { max-width: 780px; margin: 0 auto; padding: 24px 0; }
+.help-nav { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+.help-nav a { padding: 8px 20px; background: #fff; border-radius: 50px; font-size: 13px; color: var(--c-text-2); border: 1px solid var(--c-border); text-decoration: none; transition: all .2s ease; }
+.help-nav a:hover { background: var(--c-orange); color: #fff; border-color: var(--c-orange); }
+.help-sec { margin-bottom: 32px; }
+.help-sec h3 { font-size: 20px; font-weight: 750; color: var(--c-blue); margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--c-orange); }
+.faq-item { background: #fff; border-radius: 10px; margin-bottom: 8px; box-shadow: var(--shadow-xs); overflow: hidden; }
+.faq-q { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; font-weight: 650; font-size: 15px; cursor: pointer; user-select: none; }
+.faq-q:hover { background: var(--c-bg); }
+.faq-a { padding: 0 18px; max-height: 0; overflow: hidden; transition: all .3s ease; font-size: 14px; color: var(--c-text-2); line-height: 1.8; }
+.faq-item.open .faq-a { max-height: 300px; padding-bottom: 16px; }
+.faq-item.open .faq-q { color: var(--c-orange); }
+.rule-item { display: flex; gap: 14px; padding: 14px 16px; background: #fff; border-radius: 10px; margin-bottom: 8px; box-shadow: var(--shadow-xs); }
+.rule-num { width: 30px; height: 30px; border-radius: 50%; background: var(--c-orange); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.rule-title { font-weight: 650; font-size: 15px; margin-bottom: 2px; }
+.rule-desc { font-size: 13px; color: var(--c-text-2); }
+.penalty-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow-xs); }
+.penalty-table th, .penalty-table td { padding: 11px 14px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--c-divider); }
+.penalty-table th { background: var(--c-blue); color: #fff; font-weight: 600; }
+.penalty-table tr:last-child td { border-bottom: none; }
+.penalty-table tr.severe { background: #FFF5F5; }
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="help-page">
+  <div class="page-header">
+    <h2>❓ 帮助中心</h2>
+    <p class="desc">了解社区规则，获得使用帮助</p>
+  </div>
+
+  <div class="help-nav">
+    <a href="#faq">常见问题</a>
+    <a href="#rules">社区准则</a>
+    <a href="#penalty">违规处理</a>
+    <a href="#privacy">隐私保护</a>
+    <a href="#auth-guide">认证指南</a>
+  </div>
+
+  <!-- FAQ -->
+  <div class="help-sec" id="faq">
+    <h3>🙋 常见问题</h3>
+    {% set faqs = [
+      ('0731本地生活圈是什么？', '韶山人专属的实名认证本地生活社区平台。不同于58同城等全国性信息平台，严格锁定韶山本地用户，通过身份证+手机号双重实名认证，确保每一个账号背后都是真实的韶山邻居。提供新鲜事、吃喝玩乐、便民服务、数码科技、二手交易、求职招聘、教育亲子、小区邻里、出行交通、闲聊交友、建言献策等十一大功能板块。'),
+      ('为什么必须实名认证？', '实名认证是我们的核心机制。坚持"一人一号"原则，目的有三个：①建立信任——知道对方是谁才能放心交流交易；②杜绝虚假——防止水军、骗子、机器人破坏社区氛围；③保护安全——出现纠纷时可追责，维护所有用户的权益。'),
+      ('认证分为几个等级？各有什么权益？', '四级递进认证：<br><strong>基础认证</strong>（手机号+身份证号）→ 浏览全站<br><strong>标准认证</strong>（+人脸识别）→ 发帖、评论、点赞<br><strong>高级认证</strong>（+户口/居住证）→ 交易、求职招聘、拼车<br><strong>商家认证</strong>（+营业执照）→ 发布商业信息、开店'),
+      ('如何发布帖子？有什么要求？', '完成标准认证 → 选择对应板块 → 填写标题（格式：【分类】+ 简明事由）→ 编写实质内容（禁止纯表情/纯数字灌水）→ 上传图片（吃喝玩乐类须3张以上实拍图）→ 提交发布。'),
+      ('我不是韶山人，可以注册吗？', '0731本地生活圈仅面向韶山本地居民。注册需要提供韶山本地手机号、身份证号，高级认证还需上传户口本或居住证明。非韶山户籍无法完成高级认证，只能浏览基础内容。这是为了维护社区的真实性和安全性，并非排斥。'),
+    ] %}
+    {% for q, a in faqs %}
+    <div class="faq-item{% if loop.first %} open{% endif %}">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">{{ q }}<span style="font-size:11px;">▼</span></div>
+      <div class="faq-a">{{ a | safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Rules -->
+  <div class="help-sec" id="rules">
+    <h3>📜 社区准则</h3>
+    {% set rules = [
+      ('真实身份，一人一号', '同一身份证号、同一人脸信息仅能认证一个账号。不得使用他人身份信息注册，一经发现永久封号。'),
+      ('友善交流，邻里温度', '尊重每一位邻居，禁止人身攻击、辱骂、骚扰。交流中保持友善和礼貌。'),
+      ('信息真实，杜绝虚假', '发布信息须真实有效。禁止编造、夸大、误导。交易帖子须明码标价、实物实拍。转载须注明来源。'),
+      ('保护隐私，安全第一', '小区邻里板块发帖时须隐去具体门牌号。联系方式由发帖人自行决定是否公开。未经他人同意不得公开他人信息。'),
+      ('依法合规，远离红线', '严禁涉政涉黄涉赌、严禁诈骗、严禁传销、严禁违禁品交易。严重违规者永久封号并移交公安机关。'),
+      ('分类发布，方便你我', '请按照板块主题发帖。发错板块将被移动或删除。'),
+    ] %}
+    {% for title, desc in rules %}
+    <div class="rule-item">
+      <div class="rule-num">{{ loop.index }}</div>
+      <div><div class="rule-title">{{ title }}</div><div class="rule-desc">{{ desc }}</div></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Penalties -->
+  <div class="help-sec" id="penalty">
+    <h3>⚖️ 违规处理机制</h3>
+    <table class="penalty-table">
+      <thead><tr><th>违规次数</th><th>处理方式</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>首次违规</td><td>删帖警告</td><td>删除违规内容，发送警告通知，记录违规档案</td></tr>
+        <tr><td>二次违规</td><td>禁言3天</td><td>3天内不可发帖/评论/点赞，期满自动解禁</td></tr>
+        <tr><td>三次违规</td><td>禁言30天</td><td>30天内不可发帖/评论/点赞，期满自动解禁</td></tr>
+        <tr class="severe"><td>严重违规</td><td>永久封号+报警</td><td>诈骗、造谣、涉法行为永久封号，移交公安机关处理</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Privacy -->
+  <div class="help-sec" id="privacy">
+    <h3>🛡️ 隐私保护</h3>
+    <div class="card" style="padding:20px;">
+      <ul style="font-size:14px;color:var(--c-text-2);line-height:2.2;">
+        <li>✅ 所有证件照片采用 <strong>AES-256 加密存储</strong></li>
+        <li>✅ 身份证号脱敏显示（如：4303**********1234），绝不公开完整号码</li>
+        <li>✅ 用户联系方式由发帖人<strong>自行决定</strong>是否在帖子中公开</li>
+        <li>✅ 小区邻里板块发帖时<strong>强制隐去具体门牌号</strong></li>
+        <li>✅ 异常登录（异地/IP突变）<strong>自动冻结</strong>并通知用户，需人脸验证解冻</li>
+        <li>✅ 未经用户明确授权，<strong>绝不向第三方提供个人信息</strong></li>
+        <li>✅ 用户可随时在个人中心管理自己的信息可见范围</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Auth Guide -->
+  <div class="help-sec" id="auth-guide">
+    <h3>📖 认证指南</h3>
+    <div class="card" style="padding:20px;">
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:14px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--c-bg);border-radius:10px;">
+          <span style="font-size:22px;">1️⃣</span>
+          <div><strong>基础认证</strong> — 输入手机号+获取验证码+输入身份证号，提交即可浏览全站</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--c-bg);border-radius:10px;">
+          <span style="font-size:22px;">2️⃣</span>
+          <div><strong>标准认证</strong> — 在基础认证之上，打开摄像头完成人脸识别，即可发帖互动</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--c-bg);border-radius:10px;">
+          <span style="font-size:22px;">3️⃣</span>
+          <div><strong>高级认证</strong> — 上传户口本或居住证照片，等待审核（约1-2个工作日）</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--c-bg);border-radius:10px;">
+          <span style="font-size:22px;">4️⃣</span>
+          <div><strong>商家认证</strong> — 完成高级认证后，上传营业执照，审核通过获得金色商家标识</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}
