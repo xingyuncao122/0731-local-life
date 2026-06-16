@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>管理后台 - 0731本地生活圈</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .admin-sidebar {
+      width: 240px;
+      background: linear-gradient(180deg, #12273D 0%, #1A3A5E 100%);
+      color: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 200;
+      padding: 20px 0;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .admin-sidebar .sb-logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      margin-bottom: 10px;
+    }
+    .admin-sidebar .sb-logo h3 {
+      font-size: 18px;
+      font-weight: 750;
+    }
+    .admin-sidebar .sb-logo span {
+      font-size: 11px;
+      opacity: .6;
+    }
+    .admin-sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      color: rgba(255,255,255,.7);
+      font-size: 14px;
+      transition: all .2s ease;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .admin-sidebar nav a:hover,
+    .admin-sidebar nav a.active {
+      background: rgba(255,255,255,.1);
+      color: #fff;
+    }
+    .admin-sidebar nav a .nav-icon {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+    .admin-main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 28px 32px;
+      background: var(--c-bg);
+      min-height: 100vh;
+    }
+    .admin-main .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .admin-main .page-header h2 {
+      font-size: 22px;
+      color: var(--c-blue);
+      font-weight: 750;
+    }
+    .admin-main .page-header .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--c-text-2);
+    }
+
+    /* Stats cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--shadow-xs);
+      text-align: center;
+    }
+    .stat-card .stat-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .stat-card .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--c-blue);
+    }
+    .stat-card .stat-lbl {
+      font-size: 12px;
+      color: var(--c-text-3);
+      margin-top: 4px;
+    }
+
+    /* Section panels */
+    .admin-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-xs);
+    }
+    .admin-section h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--c-blue);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--c-divider);
+    }
+
+    /* Post management table */
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .admin-table th, .admin-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--c-divider);
+    }
+    .admin-table th {
+      background: var(--c-blue-bg);
+      color: var(--c-blue);
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .admin-table tr:hover td {
+      background: var(--c-orange-bg);
+    }
+    .admin-table .post-title-cell {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .admin-table .tag-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 650;
+      margin: 1px 2px;
+    }
+    .tag-pinned {
+      background: #FFF8E1;
+      color: #B8860B;
+    }
+    .tag-hot {
+      background: #FFEBEE;
+      color: #C62828;
+    }
+    .tag-essential {
+      background: #E8F5E9;
+      color: #2E7D32;
+    }
+    .admin-table .action-btns {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .btn-mini {
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid var(--c-border);
+      background: #fff;
+      color: var(--c-text-2);
+      transition: all .15s ease;
+      white-space: nowrap;
+    }
+    .btn-mini:hover {
+      background: var(--c-orange);
+      color: #fff;
+      border-color: var(--c-orange);
+    }
+    .btn-mini.active {
+      background: var(--c-green);
+      color: #fff;
+      border-color: var(--c-green);
+    }
+    .btn-mini.danger {
+      color: var(--c-red);
+      border-color: var(--c-red);
+    }
+    .btn-mini.danger:hover {
+      background: var(--c-red);
+      color: #fff;
+    }
+    .btn-mini.warn {
+      color: var(--c-yellow);
+      border-color: var(--c-yellow);
+    }
+
+    /* Online count */
+    .online-manager {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .online-manager input {
+      width: 100px;
+      padding: 8px 12px;
+      border: 2px solid var(--c-border);
+      border-radius: 8px;
+      font-size: 15px;
+      text-align: center;
+    }
+    .online-manager .current-count {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--c-orange);
+    }
+
+    /* Tab switching */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Coins info */
+    .coins-info {
+      background: linear-gradient(135deg, #FFF8E1, #FFFDE7);
+      border: 1px solid var(--c-gold);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .coins-info h4 {
+      color: #B8860B;
+      margin-bottom: 12px;
+    }
+    .coins-info .rate-table {
+      width: 100%;
+      max-width: 500px;
+    }
+    .coins-info .rate-table td {
+      padding: 6px 0;
+      font-size: 14px;
+    }
+
+    /* Check-in section */
+    .checkin-section {
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(135deg, var(--c-orange-bg), #fff);
+      border-radius: 16px;
+      margin-bottom: 20px;
+      border: 2px dashed var(--c-orange);
+    }
+    .checkin-section h3 {
+      font-size: 20px;
+      color: var(--c-blue);
+      margin-bottom: 8px;
+    }
+    .checkin-btn {
+      display: inline-block;
+      padding: 14px 48px;
+      background: linear-gradient(135deg, var(--c-gold), var(--c-gold-light));
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(212,175,55,.4);
+      transition: all .3s ease;
+    }
+    .checkin-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 24px rgba(212,175,55,.6);
+    }
+    .checkin-btn:disabled {
+      background: #ccc;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .checkin-result {
+      margin-top: 16px;
+      font-size: 16px;
+      font-weight: 650;
+      color: var(--c-orange);
+      display: none;
+    }
+    .checkin-result.show {
+      display: block;
+    }
+
+    @media (max-width: 767px) {
+      .admin-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 12px 0;
+      }
+      .admin-sidebar nav {
+        display: flex;
+        overflow-x: auto;
+      }
+      .admin-sidebar nav a {
+        padding: 8px 14px;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+      .admin-main {
+        margin-left: 0;
+        padding: 16px;
+      }
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .admin-layout {
+        flex-direction: column;
+      }
+      .admin-table {
+        font-size: 11px;
+      }
+      .admin-table th, .admin-table td {
+        padding: 6px 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sb-logo">
+      <h3>⚙️ 管理后台</h3>
+      <span>0731本地生活圈</span>
+    </div>
+    <nav>
+      <a href="#tab-dashboard" class="active" onclick="switchAdminTab('dashboard')">
+        <span class="nav-icon">📊</span> 数据概览
+      </a>
+      <a href="#tab-posts" onclick="switchAdminTab('posts')">
+        <span class="nav-icon">📝</span> 帖子管理
+      </a>
+      <a href="#tab-users" onclick="switchAdminTab('users')">
+        <span class="nav-icon">👥</span> 用户管理
+      </a>
+      <a href="#tab-reports" onclick="switchAdminTab('reports')">
+        <span class="nav-icon">🚩</span> 举报处理
+      </a>
+      <a href="#tab-online" onclick="switchAdminTab('online')">
+        <span class="nav-icon">🟢</span> 在线人数
+      </a>
+      <a href="#tab-pricing" onclick="switchAdminTab('pricing')">
+        <span class="nav-icon">💰</span> 论坛币体系
+      </a>
+      <a href="/admin/data-panel/user/list" target="_blank" style="margin-top:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:16px;">
+        <span class="nav-icon">🗄️</span> 数据管理 (SQLAdmin)
+      </a>
+      <a href="/" target="_blank">
+        <span class="nav-icon">🏠</span> 返回前台
+      </a>
+      <a href="#" onclick="handleLogout()" style="color:rgba(255,255,255,.5);">
+        <span class="nav-icon">🚪</span> 退出登录
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <div class="page-header">
+      <h2>管理后台</h2>
+      <div class="user-info">
+        👤 {{ admin_user.nickname }}
+        <a href="#" onclick="handleLogout()" style="color:var(--c-red);font-size:13px;">退出</a>
+      </div>
+    </div>
+
+    <!-- ===== Tab: Dashboard ===== -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-val">{{ "{:,}".format(total_users) }}</div>
+          <div class="stat-lbl">注册用户</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📝</div>
+          <div class="stat-val">{{ "{:,}".format(total_posts) }}</div>
+          <div class="stat-lbl">帖子总数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💬</div>
+          <div class="stat-val">{{ "{:,}".format(total_comments) }}</div>
+          <div class="stat-lbl">评论总数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🚩</div>
+          <div class="stat-val">{{ pending_reports }}</div>
+          <div class="stat-lbl">待处理举报</div>
+        </div>
+        <div class="stat-card" style="border: 2px solid var(--c-orange);">
+          <div class="stat-icon">🟢</div>
+          <div class="stat-val" style="color: var(--c-orange);">{{ online_count }}</div>
+          <div class="stat-lbl">当前在线</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-val">{{ today_users }}</div>
+          <div class="stat-lbl">今日新增</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Tab: Post Management ===== -->
+    <div class="tab-content" id="tab-posts">
+      <div class="admin-section">
+        <h3>📝 帖子管理（最新100条）</h3>
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>标题</th>
+                <th>作者</th>
+                <th>板块</th>
+                <th>标签</th>
+                <th>👍</th>
+                <th>💬</th>
+                <th>👁️</th>
+                <th>时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in all_posts %}
+              <tr>
+                <td>#{{ p.id }}</td>
+                <td class="post-title-cell">
+                  <a href="/post/{{ p.id }}" target="_blank" title="{{ p.title }}">{{ p.title[:30] }}</a>
+                </td>
+                <td>{{ p.author.nickname if p.author else '未知' }}</td>
+                <td><span class="badge badge-section">{{ SECTION_NAMES.get(p.section, '') }}</span></td>
+                <td>
+                  {% if p.is_pinned %}<span class="tag-badge tag-pinned">📌 置顶</span>{% endif %}
+                  {% if p.is_hot %}<span class="tag-badge tag-hot">🔥 火热</span>{% endif %}
+                  {% if p.is_essential %}<span class="tag-badge tag-essential">⭐ 加精</span>{% endif %}
+                  {% if not p.is_pinned and not p.is_hot and not p.is_essential %}
+                    <span style="color:var(--c-text-3);">—</span>
+                  {% endif %}
+                </td>
+                <td>{{ p.likes_count }}</td>
+                <td>{{ p.comments_count }}</td>
+                <td>{{ p.views }}</td>
+                <td>{{ p.created_at.strftime('%m-%d %H:%M') if p.created_at else '' }}</td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-mini" onclick="toggleTag({{ p.id }}, 'hot')" title="切换火热标签">
+                      {% if p.is_hot %}🔥取消{% else %}🔥火热{% endif %}
+                    </button>
+                    <button class="btn-mini" onclick="toggleTag({{ p.id }}, 'essential')" title="切换加精标签">
+                      {% if p.is_essential %}⭐取消{% else %}⭐加精{% endif %}
+                    </button>
+                    {% if p.is_pinned %}
+                    <button class="btn-mini warn" onclick="unpinPost({{ p.id }})" title="取消置顶">📌取消</button>
+                    {% else %}
+                    <button class="btn-mini" onclick="pinPost({{ p.id }})" title="置顶帖子（5元/月）">📌置顶</button>
+                    {% endif %}
+                    <button class="btn-mini danger" onclick="deletePost({{ p.id }})">🗑️删除</button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Tab: User Management ===== -->
+    <div class="tab-content" id="tab-users">
+      <div class="admin-section">
+        <h3>👥 用户管理（最新50位）</h3>
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>昵称</th>
+                <th>手机号</th>
+                <th>认证等级</th>
+                <th>积分</th>
+                <th>论坛币</th>
+                <th>管理员</th>
+                <th>状态</th>
+                <th>注册时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in all_users %}
+              <tr>
+                <td>#{{ u.id }}</td>
+                <td>{{ u.nickname }}</td>
+                <td>{{ u.phone[:3] }}****{{ u.phone[-4:] }}</td>
+                <td>
+                  <span class="badge badge-auth-{{ u.auth_level.value }}">
+                    {{ {'basic':'基础','standard':'标准','advanced':'高级','business':'商家'}[u.auth_level.value] }}
+                  </span>
+                </td>
+                <td>{{ u.score }}</td>
+                <td>🪙 {{ u.forum_coins or 0 }}</td>
+                <td>{{ '✅' if u.is_super_admin else '—' }}</td>
+                <td>
+                  {% if u.is_frozen %}
+                    <span style="color:var(--c-red);">🚫 已冻结</span>
+                  {% else %}
+                    <span style="color:var(--c-green);">✅ 正常</span>
+                  {% endif %}
+                </td>
+                <td>{{ u.created_at.strftime('%m-%d %H:%M') if u.created_at else '' }}</td>
+                <td>
+                  <div class="action-btns">
+                    {% if u.is_frozen %}
+                    <button class="btn-mini" onclick="unbanUser({{ u.id }})">解封</button>
+                    {% else %}
+                    <button class="btn-mini danger" onclick="banUser({{ u.id }})">封禁</button>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Tab: Reports ===== -->
+    <div class="tab-content" id="tab-reports">
+      <div class="admin-section">
+        <h3>🚩 待处理举报</h3>
+        {% if reports %}
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>帖子ID</th>
+                <th>举报人ID</th>
+                <th>原因</th>
+                <th>时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in reports %}
+              <tr>
+                <td>#{{ r.id }}</td>
+                <td><a href="/post/{{ r.post_id }}" target="_blank">#{{ r.post_id }}</a></td>
+                <td>#{{ r.reporter_id }}</td>
+                <td>{{ r.reason[:100] }}</td>
+                <td>{{ r.created_at.strftime('%m-%d %H:%M') if r.created_at else '' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:40px;color:var(--c-text-3);">
+          <div style="font-size:48px;">✅</div>
+          <p>暂无待处理举报</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ===== Tab: Online Count ===== -->
+    <div class="tab-content" id="tab-online">
+      <div class="admin-section" style="text-align:center;">
+        <h3>🟢 在线人数管理</h3>
+        <p style="color:var(--c-text-2);margin-bottom:24px;">默认基础在线人数100人，可根据实际流量动态调整</p>
+        <div class="online-manager" style="justify-content:center;">
+          <span style="font-size:18px;font-weight:650;">当前在线：</span>
+          <span class="current-count" id="onlineCountDisplay">{{ online_count }}</span>
+          <span style="font-size:18px;font-weight:650;">人</span>
+        </div>
+        <div style="margin-top:24px;display:flex;align-items:center;justify-content:center;gap:12px;">
+          <input type="number" id="onlineCountInput" value="{{ online_count }}" min="0" style="width:120px;padding:10px 14px;border:2px solid var(--c-border);border-radius:8px;font-size:16px;text-align:center;">
+          <button class="btn btn-primary" onclick="updateOnlineCount()">更新在线人数</button>
+        </div>
+        <p style="margin-top:16px;font-size:12px;color:var(--c-text-3);">
+          基础在线人数：100人（显示用）<br>
+          后续人数增长可根据实际访问日志或统计另行计算
+        </p>
+      </div>
+    </div>
+
+    <!-- ===== Tab: Pricing / Coins ===== -->
+    <div class="tab-content" id="tab-pricing">
+      <div class="admin-section">
+        <h3>💰 论坛币体系说明</h3>
+        <div class="coins-info">
+          <h4>兑换比例：1000论坛币 = 2元</h4>
+          <table class="rate-table">
+            <tr><td><strong>论坛币</strong></td><td><strong>等值人民币</strong></td></tr>
+            <tr><td>500币</td><td>1元</td></tr>
+            <tr><td>1000币</td><td>2元</td></tr>
+            <tr><td>2500币</td><td>5元（置顶1个月）</td></tr>
+            <tr><td>5000币</td><td>10元</td></tr>
+            <tr><td>10000币</td><td>20元</td></tr>
+            <tr><td>50000币</td><td>100元</td></tr>
+          </table>
+        </div>
+
+        <h4 style="margin-top:24px;">获取论坛币方式：</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:12px;">
+          <div style="padding:16px;background:var(--c-orange-bg);border-radius:10px;">
+            <div style="font-size:24px;">📅</div>
+            <div style="font-weight:700;margin:6px 0;">每日签到</div>
+            <div style="font-size:13px;color:var(--c-text-2);">随机获得 1-10 论坛币</div>
+          </div>
+          <div style="padding:16px;background:var(--c-blue-bg);border-radius:10px;">
+            <div style="font-size:24px;">📝</div>
+            <div style="font-weight:700;margin:6px 0;">发布帖子</div>
+            <div style="font-size:13px;color:var(--c-text-2);">每篇优质帖子 +5 论坛币</div>
+          </div>
+          <div style="padding:16px;background:var(--c-gold-bg);border-radius:10px;">
+            <div style="font-size:24px;">💬</div>
+            <div style="font-weight:700;margin:6px 0;">评论互动</div>
+            <div style="font-size:13px;color:var(--c-text-2);">每条评论 +1 论坛币</div>
+          </div>
+          <div style="padding:16px;background:#E8F5E9;border-radius:10px;">
+            <div style="font-size:24px;">⭐</div>
+            <div style="font-weight:700;margin:6px 0;">被加精</div>
+            <div style="font-size:13px;color:var(--c-text-2);">被设为加精 +20 论坛币</div>
+          </div>
+        </div>
+
+        <h4 style="margin-top:24px;">费用说明：</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:12px;">
+          <div style="padding:16px;background:#FFF3E0;border-radius:10px;border:1px solid var(--c-orange-bg);">
+            <div style="font-weight:700;">📌 帖子置顶</div>
+            <div style="font-size:13px;color:var(--c-text-2);margin-top:4px;">5元/月 = 2500论坛币/月<br>首页置顶区展示</div>
+          </div>
+          <div style="padding:16px;background:#FCE4EC;border-radius:10px;border:1px solid #F8BBD0;">
+            <div style="font-weight:700;">🔥 火热标签</div>
+            <div style="font-size:13px;color:var(--c-text-2);margin-top:4px;">自动判定：浏览量>500 或 点赞>50<br>管理员也可手动设置</div>
+          </div>
+          <div style="padding:16px;background:#E8F5E9;border-radius:10px;border:1px solid #C8E6C9;">
+            <div style="font-weight:700;">⭐ 加精标签</div>
+            <div style="font-size:13px;color:var(--c-text-2);margin-top:4px;">管理员手动评定<br>优质内容标识</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="/static/js/main.js"></script>
+<script>
+// ===== Tab Switching =====
+function switchAdminTab(name) {
+  document.querySelectorAll('.admin-sidebar nav a').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+  const tabLink = document.querySelector(`.admin-sidebar nav a[href="#tab-${name}"]`);
+  if (tabLink) tabLink.classList.add('active');
+
+  const tabPanel = document.getElementById('tab-' + name);
+  if (tabPanel) tabPanel.classList.add('active');
+
+  // Update hash
+  window.location.hash = 'tab-' + name;
+}
+
+// On load, check hash
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && hash.startsWith('tab-')) {
+    switchAdminTab(hash.replace('tab-', ''));
+  }
+});
+
+// ===== Post Actions =====
+async function toggleTag(postId, tag) {
+  const formData = new FormData();
+  formData.append('post_id', postId);
+  formData.append('tag', tag);
+
+  try {
+    const resp = await fetch('/api/admin/toggle_tag', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast(data.msg);
+      setTimeout(() => location.reload(), 500);
+    } else {
+      showToast(data.detail || '操作失败', 'error');
+    }
+  } catch (err) {
+    showToast('网络错误', 'error');
+  }
+}
+
+async function pinPost(postId) {
+  const days = prompt('请输入置顶天数（默认30天）：', '30');
+  if (!days) return;
+
+  const formData = new FormData();
+  formData.append('post_id', postId);
+  formData.append('days', days);
+
+  try {
+    const resp = await fetch('/api/admin/pin_post', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast(data.msg);
+      setTimeout(() => location.reload(), 500);
+    } else {
+      showToast(data.detail || '操作失败', 'error');
+    }
+  } catch (err) {
+    showToast('网络错误', 'error');
+  }
+}
+
+async function unpinPost(postId) {
+  if (!confirm('确定取消该帖子的置顶吗？')) return;
+
+  const formData = new FormData();
+  formData.append('post_id', postId);
+
+  try {
+    const resp = await fetch('/api/admin/unpin_post', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast(data.msg);
+      setTimeout(() => location.reload(), 500);
+    } else {
+      showToast(data.detail || '操作失败', 'error');
+    }
+  } catch (err) {
+    showToast('网络错误', 'error');
+  }
+}
+
+async function deletePost(postId) {
+  if (!confirm('确定删除该帖子吗？此操作不可恢复！')) return;
+
+  const formData = new FormData();
+  formData.append('post_id', postId);
+
+  try {
+    const resp = await fetch('/api/admin/delete_post', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast('帖子已删除');
+      setTimeout(() => location.reload(), 500);
+    } else {
+      showToast(data.detail || '操作失败', 'error');
+    }
+  } catch (err) {
+    showToast('网络错误', 'error');
+  }
+}
+
+async function banUser(userId) {
+  const reason = prompt('请输入封禁原因：', '违规处理');
+  if (!reason) return;
+
+  const formData = new FormData();
+  formData.append('target_user_id', userId);
+  formData.append('reason', reason);
+
+  try {
+    const resp = await fetch('/api/admin/ban_user', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast(data.msg);
+      setTimeout(() => location.reload(), 500);
+    } else {
+      showToast(data.detail || '操作失败', 'error');
+    }
+  } catch (err) {
+    showToast('网络错误', 'error');
+  }
+}
+
+async function unbanUser(userId) {
+  const formData = new FormData();
+  formData.append('target_user_id', userId);
+
+  try {
+    const resp = await fetch('/api/admin/unban_user', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast(data.msg);
+      setTimeout(() => location.reload(), 500);
+    } else {
+      showToast(data.detail || '操作失败', 'error');
+    }
+  } catch (err) {
+    showToast('网络错误', 'error');
+  }
+}
+
+async function updateOnlineCount() {
+  const count = document.getElementById('onlineCountInput').value;
+  const formData = new FormData();
+  formData.append('count', count);
+
+  try {
+    const resp = await fetch('/api/admin/update_online_count', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.ok) {
+      document.getElementById('onlineCountDisplay').textContent = data.count;
+      showToast('在线人数已更新');
+    } else {
+      showToast(data.detail || '操作失败', 'error');
+    }
+  } catch (err) {
+    showToast('网络错误', 'error');
+  }
+}
+
+async function handleLogout() {
+  await fetch('/api/admin/logout', { method: 'POST' });
+  window.location.href = '/admin/login';
+}
+</script>
+</body>
+</html>
