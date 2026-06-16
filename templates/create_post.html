@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}发布帖子{% endblock %}
+
+{% block page_css %}
+.create-page { max-width: 780px; margin: 0 auto; padding: 24px 0; }
+.create-header { margin-bottom: 24px; }
+.create-header h2 { font-size: 22px; font-weight: 750; color: var(--c-blue); }
+.create-header p { font-size: 14px; color: var(--c-text-2); margin-top: 2px; }
+
+/* Section picker - card style */
+.section-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 6px; }
+.section-pick {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--c-border); border-radius: 12px;
+  cursor: pointer; text-align: center; transition: all .2s ease; background: #fff; font-size: 13px;
+}
+.section-pick:hover { border-color: var(--c-orange); background: var(--c-orange-bg); }
+.section-pick.selected { border-color: var(--c-orange); background: var(--c-orange-bg); box-shadow: 0 0 0 3px rgba(255,107,53,.1); }
+.section-pick .sp-icon { font-size: 22px; }
+.section-pick .sp-name { font-weight: 650; font-size: 11px; }
+
+.format-tip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #FFF8E1; border-radius: 6px; font-size: 12px; color: #F57F17; margin-bottom: 16px; }
+
+.auth-block { display: flex; align-items: center; gap: 14px; padding: 16px; background: #E3F2FD; border-radius: 12px; margin-top: 20px; }
+.auth-block .ab-icon { font-size: 26px; }
+.auth-block .ab-text { flex: 1; font-size: 13px; }
+.auth-block .ab-text strong { display: block; margin-bottom: 2px; }
+@media (max-width: 767px) {
+  .section-picker { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .section-pick { padding: 10px 4px; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="create-page">
+  <div class="create-header">
+    <h2>✏️ 发布新帖</h2>
+    <p>分享你的本地生活信息，与韶山邻居交流</p>
+  </div>
+
+  <form id="createForm" onsubmit="handleSubmit(event)">
+
+    <!-- Section -->
+    <div class="form-group">
+      <label class="form-label">选择板块 <span style="color:var(--c-red);">*</span></label>
+      <div class="section-picker" id="sectionPicker">
+        {% for s in all_sections %}
+        <div class="section-pick" data-section="{{ s.id }}" onclick="pickSection(this,'{{ s.id }}')">
+          <div class="sp-icon">{{ s.icon }}</div>
+          <div class="sp-name">{{ s.name }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="section" id="selectedSection" value="{{ request.query_params.get('section','xinxiangshi') }}">
+      <div class="format-tip" id="formatTip">
+        <span>📋</span> <strong>发帖规范：</strong><span id="ruleDisplay">{{ SECTION_RULES.get(request.query_params.get('section','xinxiangshi'),'') }}</span>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="form-group">
+      <label class="form-label">帖子标题 <span style="color:var(--c-red);">*</span></label>
+      <input type="text" class="form-input" name="title" id="postTitle" placeholder="【测评/推荐/转让/通知】+ 简明扼要的事由" maxlength="80" required>
+      <div class="form-hint">💡 好标题示例：【测评】韶山这家新开的米粉店太绝了！汤底熬足8小时</div>
+    </div>
+
+    <!-- Content -->
+    <div class="form-group">
+      <label class="form-label">帖子内容 <span style="color:var(--c-red);">*</span></label>
+      <textarea class="form-textarea" name="content" id="postContent" placeholder="请详细描述你要分享的内容…
+
+温馨提示：
+• 须有实质内容，禁止纯表情/纯数字灌水
+• 吃喝玩乐类帖子须配3张以上实拍图
+• 二手交易类帖子须明码标价
+• 服务推荐类帖子须写明价格范围
+• 转载须注明来源" required></textarea>
+      <div class="form-hint">已输入 <strong id="charCount">0</strong> 字 · 建议不少于30字 · 支持换行分段</div>
+    </div>
+
+    <!-- Price -->
+    <div class="form-group">
+      <label class="form-label">价格信息（选填）</label>
+      <input type="text" class="form-input" name="price_info" placeholder="如：300元 / 面议 / 20元/人">
+    </div>
+
+    <!-- Contact -->
+    <div class="form-group">
+      <label class="form-label">联系方式（选填）</label>
+      <input type="text" class="form-input" name="contact_info" placeholder="如：微信/电话：138xxxxxxxx">
+      <div class="form-hint">⚠️ 联系方式会公开显示在帖子中，请自行判断是否公开</div>
+    </div>
+
+    <!-- Auth required -->
+    {% if not user or user.auth_level.value == 'basic' %}
+    <div class="auth-block">
+      <div class="ab-icon">🔒</div>
+      <div class="ab-text">
+        <strong>发帖需要标准认证</strong>
+        完成人脸识别升级为标准认证后即可发帖
+      </div>
+      <a href="/auth" class="btn btn-primary btn-sm">去认证</a>
+    </div>
+    {% endif %}
+
+    <div class="form-group" style="margin-top:28px;">
+      <button type="submit" class="btn btn-primary btn-lg btn-block" id="submitBtn">发布帖子</button>
+      <div class="form-hint" style="text-align:center;margin-top:8px;">发布即表示同意遵守 <a href="/help#rules">社区准则</a></div>
+    </div>
+  </form>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const sectionRules = {{ SECTION_RULES | tojson }};
+function pickSection(el, id) {
+  document.querySelectorAll('.section-pick').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('selectedSection').value = id;
+  document.getElementById('ruleDisplay').textContent = sectionRules[id]||'';
+}
+(function(){
+  const init=document.getElementById('selectedSection').value;
+  const el=document.querySelector(`[data-section="${init}"]`);
+  if(el)el.classList.add('selected');
+})();
+document.getElementById('postContent').addEventListener('input',function(){
+  document.getElementById('charCount').textContent=this.value.length;
+});
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  const title=fd.get('title').trim(), content=fd.get('content').trim();
+  if(!title){showToast('请输入帖子标题','error');return}
+  if(!content||content.length<10){showToast('帖子内容至少10个字','error');return}
+  const btn=document.getElementById('submitBtn');
+  btn.textContent='正在发布...';btn.disabled=true;
+  try{
+    const r=await fetch('/api/posts',{method:'POST',body:fd});
+    if(r.ok){const d=await r.json();showToast('发布成功！','success');setTimeout(()=>location.href='/post/'+d.post_id,600);}
+    else{const e=await r.json();showToast(e.detail||'请先完成认证','error');btn.textContent='发布帖子';btn.disabled=false;}
+  }catch(err){showToast('发布失败，请先登录认证','error');btn.textContent='发布帖子';btn.disabled=false;}
+}
+</script>
+{% endblock %}
