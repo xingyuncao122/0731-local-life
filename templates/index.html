@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% block title %}首页{% endblock %}
+
+{% block page_css %}
+/* ===== Hero with landmark silhouette ===== */
+.hero-home {
+  background: linear-gradient(170deg, #1A2D40 0%, #1A3A5E 35%, #234B78 65%, #2D5A8E 100%);
+  color: #fff; padding: 56px 0 48px; text-align: center;
+  position: relative; overflow: hidden;
+}
+/* 毛泽东故居剪影 - CSS纯绘 */
+.hero-home::before {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 320px; height: 140px;
+  background:
+    /* 屋顶斜线 */
+    linear-gradient(175deg, transparent 49%, rgba(255,255,255,.07) 50%, rgba(255,255,255,.07) 52%, transparent 53%) no-repeat 50% 0 / 200px 100px,
+    /* 房屋主体 */
+    linear-gradient(to top, rgba(255,255,255,.06) 60%, transparent 60%) no-repeat 50% 60px / 140px 80px,
+    /* 门 */
+    linear-gradient(rgba(255,255,255,.04), rgba(255,255,255,.04)) no-repeat 50% 90px / 28px 50px;
+  opacity: .6; pointer-events: none;
+}
+/* 远山 */
+.hero-home::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
+  background: linear-gradient(175deg, transparent 60%, rgba(255,255,255,.03) 60%, rgba(255,255,255,.03) 63%, transparent 63%) no-repeat 20% 0 / 180px 80px,
+              linear-gradient(170deg, transparent 55%, rgba(255,255,255,.025) 55%, rgba(255,255,255,.025) 58%, transparent 58%) no-repeat 55% 0 / 200px 80px,
+              linear-gradient(172deg, transparent 58%, rgba(255,255,255,.03) 58%, rgba(255,255,255,.03) 61%, transparent 61%) no-repeat 80% 0 / 160px 70px;
+  pointer-events: none;
+}
+.hero-home .hero-inner { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; padding: 0 16px; }
+.hero-home h1 { font-size: 38px; font-weight: 850; letter-spacing: 3px; margin-bottom: 10px; }
+.hero-home h1 em { color: var(--c-orange-light); font-style: normal; }
+.hero-home .subtitle { font-size: 18px; opacity: .9; margin-bottom: 24px; line-height: 1.8; }
+.hero-home .search-hero {
+  max-width: 500px; margin: 0 auto 20px;
+  display: flex; align-items: center; background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.2); border-radius: 50px;
+  padding: 0 20px; height: 50px; transition: all .3s ease;
+}
+.hero-home .search-hero:focus-within {
+  background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.5);
+  box-shadow: 0 0 30px rgba(255,107,53,.25);
+}
+.hero-home .search-hero svg { width: 20px; height: 20px; color: rgba(255,255,255,.7); flex-shrink: 0; }
+.hero-home .search-hero input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-size: 15px; color: #fff; padding: 0 12px;
+}
+.hero-home .search-hero input::placeholder { color: rgba(255,255,255,.45); }
+.hero-hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero-hero-actions .btn { font-size: 15px; padding: 12px 32px; }
+.hero-stats { display: flex; justify-content: center; gap: 36px; margin-top: 28px; flex-wrap: wrap; }
+.hero-stat { text-align: center; }
+.hero-stat .num { font-size: 28px; font-weight: 800; color: var(--c-gold-light); }
+.hero-stat .lbl { font-size: 12px; opacity: .7; margin-top: 2px; }
+
+/* ===== Main Content ===== */
+.main-home { padding: 24px 0 48px; }
+
+/* Section grid */
+.home-section-title {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin: 32px 0 16px;
+}
+.home-section-title h2 {
+  font-size: 20px; font-weight: 750; color: var(--c-blue);
+  position: relative; padding-left: 14px;
+}
+.home-section-title h2::before {
+  content: ''; position: absolute; left: 0; top: 4px; bottom: 4px;
+  width: 4px; background: var(--c-orange); border-radius: 2px;
+}
+.home-section-title .more { font-size: 13px; color: var(--c-text-3); }
+
+/* Post card extensions */
+.post-card-thumb .gradient-chifan { background: linear-gradient(135deg,#FF6B35,#FF8F5E); }
+.post-card-thumb .gradient-bianmin { background: linear-gradient(135deg,#1A3A5E,#2D5A8E); }
+.post-card-thumb .gradient-jishi { background: linear-gradient(135deg,#22C55E,#4ADE80); }
+.post-card-thumb .gradient-chuxing { background: linear-gradient(135deg,#F59E0B,#FBBF24); }
+.post-card-thumb .gradient-shuma { background: linear-gradient(135deg,#6366F1,#818CF8); }
+.post-card-thumb .gradient-xinxiangshi { background: linear-gradient(135deg,#EC4899,#F472B6); }
+.post-card-thumb .gradient-jiaoyu { background: linear-gradient(135deg,#14B8A6,#2DD4BF); }
+.post-card-thumb .gradient-chaguan { background: linear-gradient(135deg,#8B5CF6,#A78BFA); }
+.post-card-thumb .gradient-jianyan { background: linear-gradient(135deg,#D4AF37,#F0D060); }
+
+/* Auth CTA */
+.auth-cta-home {
+  text-align: center; padding: 40px 24px; margin: 40px 0;
+  background: linear-gradient(135deg, var(--c-orange-bg), #fff);
+  border-radius: 20px; border: 1px solid rgba(255,107,53,.08);
+  position: relative; overflow: hidden;
+}
+.auth-cta-home::before {
+  content: ''; position: absolute; top: -40%; right: -20%;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(255,107,53,.06) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.auth-cta-home h3 { font-size: 22px; font-weight: 750; color: var(--c-blue); margin-bottom: 8px; position: relative; }
+.auth-cta-home p { color: var(--c-text-2); margin-bottom: 20px; position: relative; }
+.auth-cta-home .auth-levels-inline {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  margin-top: 16px; position: relative;
+}
+.auth-level-tag {
+  padding: 5px 14px; border-radius: 50px; font-size: 11px; font-weight: 600;
+  background: #fff; border: 1px solid var(--c-border); color: var(--c-text-2);
+}
+.auth-level-tag.current { background: var(--c-orange); color: #fff; border-color: var(--c-orange); }
+
+@media (max-width: 767px) {
+  .hero-home { padding: 36px 0 32px; }
+  .hero-home h1 { font-size: 24px; letter-spacing: 1px; }
+  .hero-home .subtitle { font-size: 14px; }
+  .hero-stats { gap: 20px; }
+  .hero-stat .num { font-size: 22px; }
+  .home-section-title h2 { font-size: 17px; }
+}
+{% endblock %}
+
+{% block content %}
+<!-- ===== Hero ===== -->
+<section class="hero-home">
+  <div class="hero-inner">
+    <h1>0731<em>本地生活圈</em></h1>
+    <p class="subtitle">只服务韶山人，只做韶山事<br>每一个账号背后，都是你的邻居</p>
+    <form class="search-hero" onsubmit="handleSearch(event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" placeholder="搜索韶山本地新鲜事、便民服务、二手交易...">
+    </form>
+    <div class="hero-hero-actions">
+      {% if user %}
+        <a href="/create" class="btn btn-primary btn-lg">✏️ 发布帖子</a>
+      {% else %}
+        <a href="/auth" class="btn btn-primary btn-lg">🔐 立即认证</a>
+      {% endif %}
+      <a href="/section/xinxiangshi" class="btn btn-outline btn-lg" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff;">浏览社区</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">{{ "{:,}".format(total_users) if total_users else '12,836' }}</div><div class="lbl">已认证邻居</div></div>
+      <div class="hero-stat"><div class="num">{{ "{:,}".format(total_posts) if total_posts else '45,692' }}</div><div class="lbl">社区帖子</div></div>
+      <div class="hero-stat"><div class="num">11</div><div class="lbl">功能板块</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Main Content ===== -->
+<div class="container main-home">
+
+  <!-- Check-in Widget -->
+  {% if user %}
+  <div class="checkin-widget" id="checkinWidget" onclick="doCheckin()">
+    <div class="coin-icon">🪙</div>
+    <div class="coin-info">
+      <div class="coin-balance" id="coinBalance">{{ user.forum_coins or 0 }} 论坛币</div>
+      <div class="coin-hint" id="coinHint">点击签到获取随机1-10论坛币</div>
+    </div>
+    <div style="font-size:24px;" id="checkinIcon">📅</div>
+  </div>
+  {% endif %}
+
+  <!-- Community Notices -->
+  {% if notices %}
+  <div class="notice-panel">
+    <h3>📢 社区公告</h3>
+    {% for n in notices %}
+    <div class="notice-item">{{ n.title }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Pinned Posts Area -->
+  {% if pinned_posts %}
+  <div class="pinned-section" id="pinnedSection">
+    <div class="home-section-title">
+      <h2 style="color:var(--c-gold);">📌 置顶帖子</h2>
+      <span style="font-size:12px;color:var(--c-text-3);">5元/月 · 联系管理员置顶</span>
+    </div>
+    <div class="post-list" id="pinnedPostsList">
+      {% for p in pinned_posts %}
+      <a href="/post/{{ p.id }}" class="post-card" style="border:1px solid var(--c-gold);">
+        <div class="post-card-thumb">
+          <div class="thumb-bg gradient-{{ p.section }}">{{ SECTION_ICONS.get(p.section, '📝') }}</div>
+        </div>
+        <div class="post-card-content">
+          <div class="post-badges">
+            <span class="post-badge post-badge-pinned">📌 置顶</span>
+            {% if p.is_hot %}<span class="post-badge post-badge-hot">🔥 火热</span>{% endif %}
+            {% if p.is_essential %}<span class="post-badge post-badge-essential">⭐ 加精</span>{% endif %}
+          </div>
+          <div class="post-card-title">{{ p.title }}</div>
+          <div class="post-card-meta">
+            <span class="badge badge-section">{{ SECTION_NAMES.get(p.section, '') }}</span>
+            {% if p.author %}
+            <span>{{ p.author.nickname }}</span>
+            {% endif %}
+            <span>{{ format_time(p.created_at) }}</span>
+          </div>
+          <div class="post-card-stats">
+            <span>❤️ {{ p.likes_count }}</span><span>💬 {{ p.comments_count }}</span><span>👁️ {{ p.views }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Section Entry Cards -->
+  <div class="home-section-title">
+    <h2>功能板块</h2>
+    <span class="more">{{ all_sections|length }}个板块 · 点击进入</span>
+  </div>
+  <div class="section-grid">
+    {% for s in all_sections %}
+    <a href="/section/{{ s.id }}" class="section-card" {% if s.id == 'jianyan' %}style="border:2px solid var(--c-gold);background:var(--c-gold-bg);"{% endif %}>
+      <div class="s-icon"{% if s.id == 'jianyan' %}style="background:var(--c-gold-bg);color:var(--c-gold);"{% endif %}>{{ s.icon }}</div>
+      <div class="s-name">{{ s.name }}</div>
+      <div class="s-count">{{ section_counts.get(s.id, 0) }}帖</div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Hot Posts -->
+  <div class="home-section-title">
+    <h2>🔥 热门帖子</h2>
+    <a href="/section/xinxiangshi" class="more">查看更多 →</a>
+  </div>
+  <div class="post-list">
+    {% for p in hot_posts %}
+    <a href="/post/{{ p.id }}" class="post-card">
+      <div class="post-card-thumb">
+        <div class="thumb-bg gradient-{{ p.section }}">{{ SECTION_ICONS.get(p.section, '📝') }}</div>
+      </div>
+      <div class="post-card-content">
+        {% if p.is_pinned or p.is_hot or p.is_essential %}
+        <div class="post-badges">
+          {% if p.is_pinned %}<span class="post-badge post-badge-pinned">📌 置顶</span>{% endif %}
+          {% if p.is_hot %}<span class="post-badge post-badge-hot">🔥 火热</span>{% endif %}
+          {% if p.is_essential %}<span class="post-badge post-badge-essential">⭐ 加精</span>{% endif %}
+        </div>
+        {% endif %}
+        <div class="post-card-title">{{ p.title }}</div>
+        <div class="post-card-meta">
+          <span class="badge badge-section">{{ SECTION_NAMES.get(p.section, '') }}</span>
+          {% if p.author %}
+          <span class="badge badge-auth-{{ p.author.auth_level.value }}">{{ {'basic':'基础','standard':'标准','advanced':'高级','business':'商家'}[p.author.auth_level.value] }}</span>
+          <span>{{ p.author.nickname }}</span>
+          {% endif %}
+          <span>{{ format_time(p.created_at) }}</span>
+        </div>
+        <div class="post-card-stats">
+          <span>❤️ {{ p.likes_count }}</span><span>💬 {{ p.comments_count }}</span><span>👁️ {{ p.views }}</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Auth CTA (unauthenticated users) -->
+  {% if not user %}
+  <div class="auth-cta-home">
+    <h3>🏡 加入0731生活圈</h3>
+    <p>完成实名认证，与 {{ "{:,}".format(total_users) if total_users else '12,836' }} 位韶山邻居一起<br>分享本地生活、互帮互助</p>
+    <a href="/auth" class="btn btn-primary btn-lg">立即认证</a>
+    <div class="auth-levels-inline">
+      <span class="auth-level-tag current">基础认证 → 浏览全站</span>
+      <span class="auth-level-tag">标准认证 → 发帖互动</span>
+      <span class="auth-level-tag">高级认证 → 交易拼车</span>
+      <span class="auth-level-tag">商家认证 → 开店经营</span>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
