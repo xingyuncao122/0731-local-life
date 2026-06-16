@@ -6,3 +6,6 @@ jinja2==3.1.5
 python-multipart==0.0.19
 pydantic==2.10.4
 pyinstaller==6.12.0
+sqladmin==0.19.0
+httptools==0.6.4
+uvloop==0.21.0
