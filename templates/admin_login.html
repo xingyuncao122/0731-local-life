@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>管理后台登录 - 0731本地生活圈</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .admin-login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(160deg, #12273D 0%, #1A3A5E 40%, #234B78 100%);
+      padding: 20px;
+    }
+    .admin-login-card {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 32px;
+      box-shadow: 0 16px 48px rgba(0,0,0,.15);
+    }
+    .admin-login-card .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .admin-login-card .logo .mark {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--c-orange), var(--c-orange-light));
+      color: #fff;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+    }
+    .admin-login-card h2 {
+      text-align: center;
+      font-size: 22px;
+      color: var(--c-blue);
+      margin-top: 12px;
+      font-weight: 750;
+    }
+    .admin-login-card .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: var(--c-text-3);
+      margin-bottom: 28px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 650;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: var(--c-text);
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--c-border);
+      border-radius: 10px;
+      font-size: 15px;
+      color: var(--c-text);
+      transition: all .2s ease;
+      outline: none;
+      background: var(--c-bg);
+    }
+    .form-group input:focus {
+      border-color: var(--c-orange);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(255,107,53,.08);
+    }
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--c-orange), var(--c-orange-light));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s ease;
+      box-shadow: 0 4px 14px rgba(255,107,53,.3);
+    }
+    .btn-login:hover {
+      box-shadow: 0 6px 20px rgba(255,107,53,.45);
+      transform: translateY(-1px);
+    }
+    .btn-login:disabled {
+      opacity: .6;
+      pointer-events: none;
+    }
+    .error-msg {
+      text-align: center;
+      color: var(--c-red);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+    .error-msg.show {
+      display: block;
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .back-link a {
+      color: var(--c-text-3);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+<div class="admin-login-page">
+  <div class="admin-login-card">
+    <div class="logo">
+      <span class="mark">⚙️</span>
+    </div>
+    <h2>管理后台登录</h2>
+    <p class="subtitle">0731本地生活圈 · 超级管理员</p>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>管理员账号</label>
+        <input type="text" name="username" placeholder="请输入管理员账号" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>管理员密码</label>
+        <input type="password" name="password" placeholder="请输入管理员密码" required>
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn">登 录</button>
+      <div class="error-msg" id="errorMsg"></div>
+    </form>
+    <div class="back-link">
+      <a href="/">← 返回首页</a>
+    </div>
+  </div>
+</div>
+
+<script>
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const error = document.getElementById('errorMsg');
+  btn.disabled = true;
+  btn.textContent = '登录中...';
+  error.classList.remove('show');
+
+  const form = e.target;
+  const formData = new FormData(form);
+
+  try {
+    const resp = await fetch('/api/admin/login', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      window.location.href = '/admin/dashboard';
+    } else {
+      error.textContent = data.detail || '登录失败';
+      error.classList.add('show');
+    }
+  } catch (err) {
+    error.textContent = '网络错误，请重试';
+    error.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '登 录';
+  }
+}
+</script>
+</body>
+</html>
