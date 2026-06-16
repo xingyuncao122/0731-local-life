@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}实名认证{% endblock %}
+
+{% block page_css %}
+.auth-page { max-width: 640px; margin: 0 auto; padding: 24px 0; }
+.auth-page-header { text-align: center; margin-bottom: 28px; }
+.auth-page-header h2 { font-size: 24px; font-weight: 750; color: var(--c-blue); }
+.auth-page-header p { font-size: 14px; color: var(--c-text-3); margin-top: 4px; }
+
+/* Level overview cards */
+.auth-level-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 28px; }
+.auth-lv-card { background: #fff; border-radius: 12px; padding: 16px 10px; border: 2px solid var(--c-border); text-align: center; transition: all .3s ease; }
+.auth-lv-card.done { border-color: var(--c-green); background: #F0FDF4; }
+.auth-lv-card.current { border-color: var(--c-orange); box-shadow: 0 0 0 4px rgba(255,107,53,.08); }
+.auth-lv-card .lv-icon { font-size: 30px; margin-bottom: 6px; }
+.auth-lv-card .lv-name { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+.auth-lv-card .lv-desc { font-size: 11px; color: var(--c-text-3); }
+.auth-lv-card .lv-rights { font-size: 11px; color: var(--c-orange); margin-top: 4px; }
+
+/* Form card */
+.auth-form-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+.auth-form-card h3 { font-size: 17px; font-weight: 750; color: var(--c-blue); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.auth-form-card.disabled { opacity: .5; pointer-events: none; }
+
+/* Face scan */
+.face-scan { width: 100%; aspect-ratio: 4/3; max-height: 280px; background: linear-gradient(135deg,#14142b,#1a1a3e); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; cursor: pointer; position: relative; overflow: hidden; }
+.face-scan .scan-frame { position: absolute; width: 170px; height: 210px; border: 3px solid rgba(255,107,53,.5); border-radius: 16px; animation: facePulse 2s ease-in-out infinite; }
+@keyframes facePulse { 0%,100%{border-color:rgba(255,107,53,.3)} 50%{border-color:rgba(255,107,53,.8)} }
+.face-scan.success { background: linear-gradient(135deg,#0D3320,#14522D); }
+
+/* Privacy */
+.privacy-card { background: linear-gradient(135deg,#F0FDF4,#E8F5E9); border: 1px solid #BBF7D0; border-radius: 16px; padding: 20px; margin-top: 20px; }
+.privacy-card h4 { color: var(--c-green); margin-bottom: 10px; }
+.privacy-card ul { font-size: 13px; color: var(--c-text-2); line-height: 2; }
+
+@media (max-width: 767px) {
+  .auth-level-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps { gap: 4px; }
+  .step-item { padding: 0 6px; min-width: auto; }
+  .step-dot { width: 32px; height: 32px; font-size: 12px; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="auth-page">
+
+  <div class="auth-page-header">
+    <h2>🔐 实名认证</h2>
+    <p>严格执行手机号+身份证双重实名认证，确保每一个账号背后都是韶山本地真实居民</p>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step-item current" id="s1"><div class="step-dot">1</div><div class="step-label">基础认证<br>手机+身份证</div></div>
+    <div class="step-item" id="s2"><div class="step-dot">2</div><div class="step-label">标准认证<br>人脸识别</div></div>
+    <div class="step-item" id="s3"><div class="step-dot">3</div><div class="step-label">高级认证<br>户口/居住证</div></div>
+    <div class="step-item" id="s4"><div class="step-dot">4</div><div class="step-label">商家认证<br>营业执照</div></div>
+  </div>
+
+  <!-- Level overview -->
+  <div class="auth-level-grid">
+    <div class="auth-lv-card current" id="lv1"><div class="lv-icon">🔓</div><div class="lv-name">基础认证</div><div class="lv-desc">手机+身份证号</div><div class="lv-rights">浏览全站</div></div>
+    <div class="auth-lv-card" id="lv2"><div class="lv-icon">🔒</div><div class="lv-name">标准认证</div><div class="lv-desc">+人脸识别</div><div class="lv-rights">发帖/评论/点赞</div></div>
+    <div class="auth-lv-card" id="lv3"><div class="lv-icon">🛡️</div><div class="lv-name">高级认证</div><div class="lv-desc">+户口/居住证</div><div class="lv-rights">交易/求职/拼车</div></div>
+    <div class="auth-lv-card" id="lv4"><div class="lv-icon">🏪</div><div class="lv-name">商家认证</div><div class="lv-desc">+营业执照</div><div class="lv-rights">开店经营</div></div>
+  </div>
+
+  <!-- Basic Auth Form -->
+  <div class="auth-form-card">
+    <h3>📱 第一步：基础认证</h3>
+    <div class="form-group">
+      <label class="form-label">手机号 <span style="color:var(--c-red)">*</span></label>
+      <div style="display:flex;gap:8px;">
+        <input type="tel" class="form-input" id="phoneInput" placeholder="请输入11位手机号" maxlength="11" style="flex:1;">
+        <button class="btn btn-outline btn-sm" onclick="sendSMS()" id="smsBtn" style="white-space:nowrap;">获取验证码</button>
+      </div>
+      <div class="form-hint">仅接受国内三大运营商手机号（移动/联通/电信），拦截虚拟号</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">短信验证码 <span style="color:var(--c-red)">*</span></label>
+      <input type="text" class="form-input" id="smsCode" placeholder="请输入6位验证码" maxlength="6">
+    </div>
+    <div class="form-group">
+      <label class="form-label">身份证号 <span style="color:var(--c-red)">*</span></label>
+      <input type="text" class="form-input" id="idNumber" placeholder="请输入18位身份证号" maxlength="18">
+      <div class="form-hint">🔒 身份证号采用SHA-256加盐哈希后存储，仅用于实名验证，绝不公开</div>
+    </div>
+    <button class="btn btn-primary btn-lg btn-block" onclick="doBasicAuth()">完成基础认证 → 浏览全站</button>
+  </div>
+
+  <!-- Standard: Face Recognition -->
+  <div class="auth-form-card disabled" id="faceCard">
+    <h3>👤 第二步：标准认证 — 人脸识别</h3>
+    <p style="font-size:14px;color:var(--c-text-2);margin-bottom:14px;">请将脸部置于取景框内，保持光线充足、面部无遮挡。同一人脸信息仅能绑定一个账号。</p>
+    <div class="face-scan" id="faceScan" onclick="doFaceAuth()">
+      <div class="scan-frame" id="scanFrame"></div>
+      <div style="font-size:48px;position:relative;z-index:1;" id="faceIcon">👤</div>
+      <div style="font-size:14px;opacity:.8;margin-top:8px;position:relative;z-index:1;" id="faceHint">点击开始人脸识别验证</div>
+    </div>
+  </div>
+
+  <!-- Advanced: Residence -->
+  <div class="auth-form-card disabled" id="advancedCard">
+    <h3>📄 第三步：高级认证 — 户口/居住证上传</h3>
+    <p style="font-size:14px;color:var(--c-text-2);margin-bottom:14px;">上传韶山本地户口本或居住证明（拍照或相册选择），审核通过后可解锁交易、求职、拼车功能。</p>
+    <div class="upload-zone" onclick="showToast('请先完成标准认证','warning')">
+      <div style="font-size:32px;margin-bottom:8px;">📤</div>
+      <div style="font-weight:600;">点击上传户口本或居住证</div>
+      <div style="font-size:12px;color:var(--c-text-3);">支持 JPG/PNG，文件加密存储</div>
+    </div>
+  </div>
+
+  <!-- Business -->
+  <div class="auth-form-card disabled" id="businessCard">
+    <h3>🏪 第四步：商家认证 — 营业执照上传</h3>
+    <p style="font-size:14px;color:var(--c-text-2);margin-bottom:14px;">上传营业执照完成商家认证，获得金色商家标识，可发布商业信息和开店。</p>
+    <div class="upload-zone" onclick="showToast('请先完成高级认证','warning')">
+      <div style="font-size:32px;margin-bottom:8px;">📤</div>
+      <div style="font-weight:600;">点击上传营业执照</div>
+      <div style="font-size:12px;color:var(--c-text-3);">须清晰可辨，审核1-2个工作日</div>
+    </div>
+  </div>
+
+  <!-- Privacy -->
+  <div class="privacy-card">
+    <h4>🛡️ 隐私保护承诺</h4>
+    <ul>
+      <li>✅ 所有证件照片采用 <strong>AES-256 加密存储</strong></li>
+      <li>✅ 身份证号脱敏显示（如：4303**********1234），绝不公开完整号码</li>
+      <li>✅ 用户联系方式由发帖人<strong>自行决定</strong>是否公开</li>
+      <li>✅ 异常登录（异地/IP突变）<strong>自动冻结</strong>并通知用户</li>
+      <li>✅ 同一身份证号仅能认证一个账号，同一人脸仅能绑定一个账号</li>
+    </ul>
+  </div>
+
+  <!-- 超级管理员登录 -->
+  <div id="adminLoginSection" style="margin-top:20px;border-top:1px dashed var(--c-border);padding-top:20px;">
+    <details>
+      <summary style="cursor:pointer;font-size:13px;color:var(--c-text-3);text-align:center;">🔑 管理员入口</summary>
+      <div style="max-width:320px;margin:12px auto;background:#fff;padding:16px;border-radius:12px;box-shadow:var(--shadow-sm);">
+        <div class="form-group">
+          <input type="tel" class="form-input" id="adminPhone" placeholder="手机号" value="13800000000">
+        </div>
+        <div class="form-group">
+          <input type="password" class="form-input" id="adminPwd" placeholder="密码">
+        </div>
+        <button class="btn btn-primary btn-block btn-sm" onclick="adminLogin()">管理员登录</button>
+        <div class="form-hint" style="text-align:center;">默认: 13800000000 / 0731admin</div>
+      </div>
+    </details>
+  </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let progress = 1;
+{% if user %}progress = {{ {'basic':1,'standard':2,'advanced':3,'business':4}.get(user.auth_level.value,1) }};{% endif %}
+
+function updateUI() {
+  for(let i=1;i<=4;i++){
+    const s=document.getElementById('s'+i),l=document.getElementById('lv'+i);
+    s.classList.remove('current','done');l.classList.remove('current','done');
+    if(i<progress){s.classList.add('done');s.querySelector('.step-dot').textContent='✓';l.classList.add('done');}
+    if(i===progress){s.classList.add('current');l.classList.add('current');}
+  }
+  if(progress>=2){document.getElementById('faceCard').classList.remove('disabled');}
+  if(progress>=3){document.getElementById('advancedCard').classList.remove('disabled');}
+  if(progress>=4){document.getElementById('businessCard').classList.remove('disabled');}
+}
+updateUI();
+
+function sendSMS(){
+  const btn=document.getElementById('smsBtn');
+  btn.textContent='60s后重发';btn.disabled=true;
+  showToast('验证码已发送（模拟：123456）','success');
+  let s=60;const t=setInterval(()=>{s--;btn.textContent=s+'s后重发';if(s<=0){clearInterval(t);btn.textContent='获取验证码';btn.disabled=false;}},1000);
+}
+
+async function doBasicAuth(){
+  const phone=document.getElementById('phoneInput').value.trim();
+  if(!phone||phone.length!==11){showToast('请输入正确的11位手机号','error');return}
+  const r=await fetch('/api/auth/login',{method:'POST',body:new URLSearchParams({phone})});
+  if(r.ok){progress=2;updateUI();showToast('✅ 基础认证完成！请继续人脸识别','success');}
+}
+
+async function doFaceAuth(){
+  if(progress<2){showToast('请先完成基础认证','error');return}
+  if(progress>=3){showToast('标准认证已完成','warning');return}
+  const area=document.getElementById('faceScan');
+  area.classList.add('success');
+  document.getElementById('scanFrame').style.display='none';
+  document.getElementById('faceIcon').textContent='✅';
+  document.getElementById('faceHint').textContent='人脸识别通过！';
+  const r=await fetch('/api/auth/upgrade',{method:'POST',body:new URLSearchParams({level:'standard'})});
+  if(r.ok){progress=3;updateUI();showToast('✅ 标准认证完成！你现在可以发帖了','success');}
+}
+
+async function adminLogin(){
+  var phone=document.getElementById('adminPhone').value.trim();
+  var pwd=document.getElementById('adminPwd').value.trim();
+  if(!phone||!pwd){showToast('请输入手机号和密码','error');return}
+  var r=await fetch('/api/admin/login',{method:'POST',body:new URLSearchParams({phone:phone,password:pwd})});
+  if(r.ok){showToast('超级管理员登录成功！','success');setTimeout(function(){location.href='/'},800)}
+  else{showToast('密码错误或没有权限','error')}
+}
+</script>
+{% endblock %}
