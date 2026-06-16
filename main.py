@@ -1063,12 +1063,13 @@ def page_admin_data(request: Request):
 # ========== 启动入口 ==========
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.environ.get("PORT", 8000))
     print("\n" + "="*60)
     print("   0731本地生活圈")
     print("   只服务韶山人，只做韶山事")
     print("   每一个账号背后，都是你的邻居")
     print("="*60)
-    print(f"   访问地址: http://127.0.0.1:8000")
-    print(f"   API 文档: http://127.0.0.1:8000/docs")
+    print(f"   访问地址: http://0.0.0.0:{port}")
+    print(f"   API 文档: http://0.0.0.0:{port}/docs")
     print("="*60 + "\n")
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=port)
