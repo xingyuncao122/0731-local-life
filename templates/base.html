@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="0731本地生活圈 - 只服务韶山人，只做韶山事。每一个账号背后，都是你的邻居。">
+  <title>{% block title %}首页{% endblock %} - 0731本地生活圈</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>{% block page_css %}{% endblock %}</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="header-logo">
+      <span class="logo-mark">0731</span>
+      <em>本地生活圈</em>
+    </a>
+    <nav class="header-nav">
+      <a href="/" class="{% if request.url.path=='/' %}active{% endif %}">首页</a>
+      <a href="/section/xinxiangshi">新鲜事</a>
+      <a href="/section/chifan">吃喝玩乐</a>
+      <a href="/section/bianmin">便民服务</a>
+      <a href="/section/shuma">数码科技</a>
+      <a href="/section/jishi">韶山集市</a>
+      <a href="/admin/login" style="color:var(--c-gold);font-weight:650;">⚙️ 管理</a>
+    </nav>
+    <div class="header-actions">
+      <span class="online-indicator" id="onlineIndicator">
+        <span class="online-dot"></span> <span id="onlineCount">100</span>人在线
+      </span>
+      <form class="search-box" onsubmit="handleSearch(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" name="q" placeholder="搜索韶山本地信息...">
+      </form>
+      {% if user %}
+        <span class="badge badge-auth-{{ user.auth_level.value }}">{{ {'basic':'基础','standard':'标准','advanced':'高级','business':'商家'}[user.auth_level.value] }}认证</span>
+        <a href="/profile" class="btn btn-ghost btn-sm">👤</a>
+      {% else %}
+        <a href="/auth" class="btn btn-primary btn-sm">立即认证</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% block content %}{% endblock %}
+
+<footer class="footer">
+  <div class="container">
+    <p><strong>0731本地生活圈</strong> — 只服务韶山人，只做韶山事</p>
+    <p style="margin-top:8px;">
+      <a href="/help">社区准则</a> · <a href="/help#privacy">隐私保护</a> · <a href="/help">帮助中心</a> · <a href="/admin/login">⚙️ 管理后台</a>
+    </p>
+    <p style="margin-top:8px;opacity:.4;">© 2026 0731本地生活圈</p>
+  </div>
+</footer>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="/" class="bottom-nav-item {% if request.url.path=='/' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>首页</a>
+    <a href="/section/xinxiangshi" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>板块</a>
+    <a href="/create" class="bottom-nav-create">+</a>
+    <a href="#" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>消息</a>
+    <a href="/profile" class="bottom-nav-item {% if request.url.path=='/profile' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v1.2c0 .66.54 1.2 1.2 1.2h16.8c.66 0 1.2-.54 1.2-1.2v-1.2c0-3.2-6.4-4.8-9.6-4.8z"/></svg>我的</a>
+  </div>
+</nav>
+
+<script src="/static/js/main.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
