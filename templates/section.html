@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ section_name }}{% endblock %}
+
+{% block page_css %}
+.section-page-hero {
+  background: linear-gradient(135deg, var(--c-blue), #2D5A8E);
+  color: #fff; padding: 28px 0;
+}
+.section-page-inner {
+  display: flex; align-items: center; gap: 16px;
+  max-width: var(--max-w); margin: 0 auto; padding: 0 16px;
+}
+.section-page-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: rgba(255,255,255,.12); display: flex;
+  align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0;
+}
+.section-page-text h2 { font-size: 22px; font-weight: 750; }
+.section-page-text p { font-size: 13px; opacity: .85; margin-top: 4px; max-width: 600px; }
+.section-rule-bar {
+  display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+  background: #FFF8E1; border-radius: 8px; margin: 16px 0;
+  font-size: 13px; color: #F57F17;
+}
+.empty-state { text-align: center; padding: 56px 16px; color: var(--c-text-3); }
+.empty-state .empty-icon { font-size: 56px; margin-bottom: 16px; }
+@media (max-width: 767px) {
+  .section-page-icon { width: 44px; height: 44px; font-size: 22px; }
+  .section-page-text h2 { font-size: 18px; }
+}
+{% endblock %}
+
+{% block content %}
+<section class="section-page-hero">
+  <div class="section-page-inner">
+    <div class="section-page-icon">{{ section_icon }}</div>
+    <div class="section-page-text">
+      <h2>{{ section_name }}</h2>
+      <p>{{ SECTION_RULES.get(section_id, '') }}</p>
+    </div>
+  </div>
+</section>
+
+<div class="container page-main">
+
+  <!-- Rule reminder -->
+  {% if section_rule %}
+  <div class="section-rule-bar">
+    <span>📋</span> <strong>发帖规范：</strong>{{ section_rule }}
+  </div>
+  {% endif %}
+
+  <!-- Filter + Create -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+    <div class="filter-bar">
+      <a href="?sort=latest" class="filter-btn {% if sort=='latest' %}active{% endif %}">最新发布</a>
+      <a href="?sort=hot" class="filter-btn {% if sort=='hot' %}active{% endif %}">最多点赞</a>
+      <a href="?sort=comments" class="filter-btn {% if sort=='comments' %}active{% endif %}">最多评论</a>
+    </div>
+    <a href="/create?section={{ section_id }}" class="btn btn-primary btn-sm">✏️ 发布新帖</a>
+  </div>
+
+  <!-- Post List -->
+  {% if posts %}
+  <div class="post-list">
+    {% for p in posts %}
+    <a href="/post/{{ p.id }}" class="post-card">
+      <div class="post-card-thumb">
+        <div class="thumb-bg" style="background:linear-gradient(135deg,var(--c-orange),var(--c-orange-light));">{{ section_icon }}</div>
+      </div>
+      <div class="post-card-content">
+        {% if p.is_pinned or p.is_hot or p.is_essential %}
+        <div class="post-badges">
+          {% if p.is_pinned %}<span class="post-badge post-badge-pinned">📌 置顶</span>{% endif %}
+          {% if p.is_hot %}<span class="post-badge post-badge-hot">🔥 火热</span>{% endif %}
+          {% if p.is_essential %}<span class="post-badge post-badge-essential">⭐ 加精</span>{% endif %}
+        </div>
+        {% endif %}
+        <div class="post-card-title">{{ p.title }}</div>
+        <div class="post-card-meta">
+          <span class="badge badge-section">{{ section_name }}</span>
+          {% if p.author %}
+          <span class="badge badge-auth-{{ p.author.auth_level.value }}">{{ {'basic':'基础','standard':'标准','advanced':'高级','business':'商家'}[p.author.auth_level.value] }}</span>
+          <span>{{ p.author.nickname }}</span>
+          {% endif %}
+          <span>{{ format_time(p.created_at) }}</span>
+        </div>
+        <div class="post-card-stats">
+          <span>❤️ {{ p.likes_count }}</span><span>💬 {{ p.comments_count }}</span><span>👁️ {{ p.views }}</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p style="font-size:16px;font-weight:600;margin-bottom:4px;">该板块暂无帖子</p>
+    <p style="font-size:13px;">快来发布第一条内容，成为本板块的开拓者！</p>
+    <a href="/create?section={{ section_id }}" class="btn btn-primary" style="margin-top:16px;">发布新帖</a>
+  </div>
+  {% endif %}
+
+</div>
+
+<a href="/create?section={{ section_id }}" class="fab" title="发帖">+</a>
+{% endblock %}
