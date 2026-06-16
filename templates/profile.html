@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}个人中心{% endblock %}
+
+{% block page_css %}
+.profile-page { max-width: 800px; margin: 0 auto; padding: 24px 0; }
+.profile-hero-card { background: linear-gradient(135deg, var(--c-blue), #2D5A8E); border-radius: 16px; padding: 30px 24px; display: flex; align-items: center; gap: 20px; color: #fff; margin-bottom: 20px; }
+.profile-hero-card .ph-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,.15); border: 3px solid rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+.ph-info { flex: 1; }
+.ph-info .ph-name { font-size: 22px; font-weight: 750; display: flex; align-items: center; gap: 8px; }
+.ph-info .ph-meta { font-size: 12px; opacity: .7; margin-top: 4px; }
+.ph-info .ph-stats { display: flex; gap: 24px; margin-top: 12px; font-size: 13px; }
+.ph-stats .phs-item { text-align: center; }
+.phs-item .phs-val { font-weight: 700; font-size: 18px; }
+.phs-item .phs-lbl { font-size: 11px; opacity: .7; }
+
+/* Tabs */
+.tab-bar { display: flex; border-bottom: 2px solid var(--c-border); margin-bottom: 20px; }
+.tab-btn { padding: 10px 24px; font-weight: 650; font-size: 14px; color: var(--c-text-3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s ease; background: none; }
+.tab-btn:hover { color: var(--c-orange); }
+.tab-btn.active { color: var(--c-orange); border-bottom-color: var(--c-orange); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.my-post-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #fff; border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow-xs); transition: all .2s ease; }
+.my-post-item:hover { box-shadow: var(--shadow-sm); }
+.my-post-info { flex: 1; min-width: 0; }
+.my-post-title { font-weight: 650; font-size: 14px; }
+.my-post-meta { font-size: 12px; color: var(--c-text-3); margin-top: 4px; }
+
+.msg-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #fff; border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow-xs); }
+.msg-row.unread { border-left: 3px solid var(--c-orange); }
+.msg-row .msg-dot { width: 40px; height: 40px; border-radius: 50%; background: var(--c-orange-bg); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.msg-row .msg-body { flex: 1; }
+.msg-row .msg-body .msg-title { font-weight: 650; font-size: 14px; }
+.msg-row .msg-body .msg-preview { font-size: 12px; color: var(--c-text-3); margin-top: 2px; }
+.msg-row .msg-time { font-size: 11px; color: var(--c-text-3); }
+
+@media (max-width: 767px) {
+  .profile-hero-card { flex-direction: column; text-align: center; padding: 20px; }
+  .ph-info .ph-stats { justify-content: center; }
+  .tab-btn { padding: 8px 14px; font-size: 12px; }
+}
+{% endblock %}
+
+{% block content %}
+{% if not user %}<script>window.location.href='/auth';</script>{% endif %}
+
+<div class="container">
+<div class="profile-page">
+
+  <!-- Profile Hero -->
+  <div class="profile-hero-card">
+    <div class="ph-avatar">{{ user.nickname[0] if user else '?' }}</div>
+    <div class="ph-info">
+      <div class="ph-name">
+        {{ user.nickname if user else '' }}
+        <span class="badge badge-auth-{{ user.auth_level.value if user else 'basic' }}">{{ {'basic':'基础认证','standard':'标准认证','advanced':'高级认证','business':'商家认证'}[user.auth_level.value] if user else '' }}</span>
+      </div>
+      <div class="ph-meta">UID: {{ '%08d' % user.id if user else '' }} · 信誉积分 {{ user.score if user else 0 }} · 注册于 {{ user.created_at.strftime('%Y年%m月') if user else '' }}</div>
+      <div class="ph-stats">
+        <div class="phs-item"><div class="phs-val">{{ my_posts|length }}</div><div class="phs-lbl">帖子</div></div>
+        <div class="phs-item"><div class="phs-val">{{ my_comments|length }}</div><div class="phs-lbl">评论</div></div>
+        <div class="phs-item"><div class="phs-val">{{ user.score if user else 0 }}</div><div class="phs-lbl">积分</div></div>
+        <div class="phs-item" style="border-left:1px solid rgba(255,255,255,.2);padding-left:16px;"><div class="phs-val">🪙 {{ user.forum_coins or 0 }}</div><div class="phs-lbl">论坛币</div></div>
+      </div>
+    </div>
+    <a href="/auth" class="btn btn-outline btn-sm" style="border-color:rgba(255,255,255,.5);color:#fff;">升级认证</a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab(event,'posts')">我的帖子</button>
+    <button class="tab-btn" onclick="switchTab(event,'comments')">我的评论</button>
+    <button class="tab-btn" onclick="switchTab(event,'messages')">消息通知</button>
+  </div>
+
+  <!-- Posts -->
+  <div class="tab-panel active" id="panel-posts">
+    {% if my_posts %}
+    {% for p in my_posts %}
+    <a href="/post/{{ p.id }}" class="my-post-item">
+      <div class="my-post-info">
+        <div class="my-post-title">{{ p.title[:50] }}</div>
+        <div class="my-post-meta">{{ SECTION_NAMES.get(p.section,'') }} · {{ format_time(p.created_at) }} · ❤️{{ p.likes_count }} · 💬{{ p.comments_count }}</div>
+      </div>
+      <span class="badge badge-auth-standard" style="background:#E8F5E9;color:#2E7D32;">已发布</span>
+    </a>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;padding:40px;color:var(--c-text-3);"><div style="font-size:48px;">📝</div><p style="margin:12px 0;">还没有发布过帖子</p><a href="/create" class="btn btn-primary btn-sm">去发帖</a></div>
+    {% endif %}
+  </div>
+
+  <!-- Comments -->
+  <div class="tab-panel" id="panel-comments">
+    {% if my_comments %}
+    {% for c in my_comments %}
+    <div class="comment-item">
+      <div class="comment-avatar">{{ user.nickname[0] if user else '我' }}</div>
+      <div class="comment-content">
+        <div class="comment-text">{{ c.content[:120] }}</div>
+        <div class="comment-meta">{{ format_time(c.created_at) }} · 帖子 #{{ c.post_id }}</div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;padding:40px;color:var(--c-text-3);"><div style="font-size:48px;">💬</div><p style="margin:12px 0;">还没有发表过评论</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Messages -->
+  <div class="tab-panel" id="panel-messages">
+    <div class="msg-row unread">
+      <div class="msg-dot">💬</div>
+      <div class="msg-body"><div class="msg-title">系统通知：欢迎加入0731本地生活圈</div><div class="msg-preview">每一个账号背后，都是你的邻居。完成认证解锁更多功能。</div></div>
+      <div class="msg-time">1天前</div>
+    </div>
+    <div class="msg-row">
+      <div class="msg-dot">📢</div>
+      <div class="msg-body"><div class="msg-title">社区公告：数码科技板块全新上线</div><div class="msg-preview">涵盖电脑维修、监控安装、音响调试等服务，欢迎入驻。</div></div>
+      <div class="msg-time">3天前</div>
+    </div>
+  </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchTab(e, name) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+</script>
+{% endblock %}
