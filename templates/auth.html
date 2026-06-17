@@ -174,17 +174,36 @@ function updateUI() {
 updateUI();
 
 function sendSMS(){
+  const phone=document.getElementById('phoneInput').value.trim();
+  if(!phone||phone.length!==11){showToast('请输入正确的11位手机号','error');return}
   const btn=document.getElementById('smsBtn');
-  btn.textContent='60s后重发';btn.disabled=true;
-  showToast('验证码已发送（模拟：123456）','success');
-  let s=60;const t=setInterval(()=>{s--;btn.textContent=s+'s后重发';if(s<=0){clearInterval(t);btn.textContent='获取验证码';btn.disabled=false;}},1000);
+  btn.textContent='发送中...';btn.disabled=true;
+  fetch('/api/auth/send-code',{method:'POST',body:new URLSearchParams({phone})})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){
+        showToast('验证码: '+d.code+' (开发模式直接显示，上线后改为短信发送)','success');
+        btn.textContent='60s后重发';
+        let s=60;const t=setInterval(()=>{s--;btn.textContent=s+'s后重发';if(s<=0){clearInterval(t);btn.textContent='获取验证码';btn.disabled=false;}},1000);
+      }else{
+        showToast(d.detail||'发送失败','error');
+        btn.textContent='获取验证码';btn.disabled=false;
+      }
+    })
+    .catch(()=>{showToast('网络错误','error');btn.textContent='获取验证码';btn.disabled=false});
 }
 
 async function doBasicAuth(){
   const phone=document.getElementById('phoneInput').value.trim();
+  const code=document.getElementById('smsCode').value.trim();
+  const idNumber=document.getElementById('idNumber').value.trim();
   if(!phone||phone.length!==11){showToast('请输入正确的11位手机号','error');return}
-  const r=await fetch('/api/auth/login',{method:'POST',body:new URLSearchParams({phone})});
+  if(!code||code.length!==6){showToast('请输入6位验证码','error');return}
+  if(!idNumber||idNumber.length!==18){showToast('请输入18位身份证号','error');return}
+  const r=await fetch('/api/auth/login',{method:'POST',body:new URLSearchParams({phone,code,id_number:idNumber})});
+  const d=await r.json();
   if(r.ok){progress=2;updateUI();showToast('✅ 基础认证完成！请继续人脸识别','success');}
+  else{showToast(d.detail||'认证失败','error')}
 }
 
 async function doFaceAuth(){

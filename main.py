@@ -33,6 +33,37 @@ BASE_DIR = Path(__file__).parent
 online_count = 100
 online_count_base = 100  # 基础在线人数
 
+# 短信验证码存储（内存，重启重置）
+sms_codes: dict[str, dict] = {}  # phone -> {code, expires_at}
+
+def generate_code() -> str:
+    """生成6位数字验证码"""
+    import random
+    return f"{random.randint(100000, 999999)}"
+
+def store_code(phone: str) -> str:
+    """存储验证码，返回生成的code"""
+    code = generate_code()
+    sms_codes[phone] = {
+        "code": code,
+        "expires_at": datetime.now() + timedelta(minutes=5),
+    }
+    return code
+
+def verify_code(phone: str, code: str) -> bool:
+    """验证验证码是否正确且未过期"""
+    entry = sms_codes.get(phone)
+    if not entry:
+        return False
+    if datetime.now() > entry["expires_at"]:
+        del sms_codes[phone]
+        return False
+    if entry["code"] != code:
+        return False
+    # 验证成功，删除已使用的验证码
+    del sms_codes[phone]
+    return True
+
 # 管理员凭证（生产环境应使用环境变量）
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD_HASH = hashlib.sha256("0731admin".encode()).hexdigest()
@@ -466,17 +497,53 @@ def page_help(request: Request):
 
 # ========== API 路由 ==========
 
+@app.post("/api/auth/send-code")
+def api_send_code(phone: str = Form(...)):
+    """发送短信验证码"""
+    # 验证手机号格式
+    phone = phone.strip()
+    if len(phone) != 11 or not phone.isdigit():
+        raise HTTPException(400, "请输入正确的11位手机号")
+    if not phone.startswith(("13", "14", "15", "16", "17", "18", "19")):
+        raise HTTPException(400, "请使用国内三大运营商手机号")
+
+    # 60秒内不允许重复发送
+    existing = sms_codes.get(phone)
+    if existing and datetime.now() < existing["expires_at"] - timedelta(minutes=4):
+        raise HTTPException(429, "验证码已发送，请60秒后重试")
+
+    code = store_code(phone)
+    # TODO: 接入真实短信服务商（阿里云/腾讯云），当前开发阶段通过API返回验证码
+    return {"ok": True, "code": code, "expires_in": 300}
+
+
 @app.post("/api/auth/login")
 def api_login(
     phone: str = Form(...),
+    code: str = Form(None),
+    id_number: str = Form(None),
     db: Session = Depends(get_db),
 ):
-    """模拟登录"""
+    """手机验证码登录/注册"""
+    phone = phone.strip()
+
+    # 检查是否已注册用户（老用户可直接用验证码登录）
     user = db.query(User).filter(User.phone == phone).first()
-    if not user:
+
+    if user:
+        # 已注册用户：需要验证码登录
+        if not code or not verify_code(phone, code):
+            raise HTTPException(401, "验证码错误或已过期")
+    else:
+        # 新用户注册：需要验证码 + 身份证号
+        if not code or not verify_code(phone, code):
+            raise HTTPException(401, "验证码错误或已过期")
+        if not id_number or len(id_number) != 18:
+            raise HTTPException(400, "请输入正确的18位身份证号")
+
         user = User(
             phone=phone,
-            id_number_hash=hash_id_number("430382199001019999"),
+            id_number_hash=hash_id_number(id_number),
             nickname=f"韶山邻居{phone[-4:]}",
             auth_level=AuthLevel.basic,
         )
